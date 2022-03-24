@@ -1,41 +1,63 @@
-{% extends 'root.html' %}
-{% load static %}
+{% extends "root.html" %}
 {% block title %}
-    Sign In
+    Register
 {% endblock %}
-
 {% block form %}
+    <div class="col-md-4 from-container ">
 
-    <div style="height: 100%" class="col-md-4 pt-5">
+
+        <form action="/password_reset/{{ request.META.QUERY_STRING }}" method="POST">
 
 
-        <div style="color:#696F79" class="row d-flex align-items-center ">
-            <figure style="color: #000000" class="text-center"><h1 class="fw-bold">Login</h1>
+            <figure class="text-center "><h2 style="color: #000000 ;" class="fw-bold">Reset Password </h2>
             </figure>
-            <form action="/password_reset/?{{ request.META.QUERY_STRING }}"
-                  method="POST">
+
+            <div class="input-fields ">
                 {% csrf_token %}
-                {% if verification %}
-                    <div class=" text-danger text-center" role="alert">
-                        <i class="fa fa-exclamation-circle"></i> {{ verification }}
+                {% if pswderr %}
+                    <div class=" text-center text-danger flex-column  align-items-center" role="alert">
+                        <i class="fa fa-exclamation-circle"></i> {{ pswderr }}
                     </div>
                 {% endif %}
-                <div class="input-fields ">
 
-                    <div class=" mb-4 d-flex flex-column  align-items-center ">
-                        <div class="mb-4 d-flex flex-column " style="width:350px;margin-right: auto;margin-left: auto ">
-                            <label class="form-label input-label " for="email">Email address</label>
-                            <input name="email" type="text" id="email" placeholder="Enter email or username"
-                                   class="form-control  form-control-lg text-input mb-4" required style=" height:70px"/>
+                <div class=" mb-3 d-flex flex-column  align-items-center ">
+                    <div class="mb-2 d-flex flex-column " style="width:350px;margin-right: auto;margin-left: auto ">
+                        <label class="form-label input-label " for="password">password*</label>
+                        <div class="password-container">
+                            <input type="password" name="password" id="password" placeholder="Enter password"
+                                   class="form-control form-control-lg text-input mb-2 password-input"
+                                   style=" height:70px " required/>
+                            <span onclick="show_password('password','password-visibility')" class="visibility"
+                                  id="password-visibility">show</span>
+
                         </div>
-                    </div>
-                    <div class="d-flex justify-content-center">
-                        <button type="submit" class="btn btn-lg btn-block submit-btn">Send reset password link</button>
-                    </div>
+                        <label class="form-label input-label " for="password-retype">Confirm password*</label>
+                        <div class="password-container">
+                            <input type="password" name="password retype" id="password-retype"
+                                   placeholder="Enter password"
+                                   class="form-control form-control-lg text-input mb-2 password-input"
+                                   style=" height:70px " required>
+                            <span onclick="show_password('password-retype','password2-visibility')" class="visibility"
+                                  id="password2-visibility">show</span>
 
+                        </div>
+
+                    </div>
                 </div>
-            </form>
-        </div>
+            </div>
+            <div class="d-flex justify-content-center">
+                <button type="submit" class="btn btn-lg btn-block submit-btn">Reset Password</button>
+            </div>
 
+            <div class="divider d-flex justify-content-center align-items-center my-2">
+                <p class="text-center fw-bold mx-3 mb-0 text-muted">OR</p>
+            </div>
+            <div class="already-container">
+                <p class="already"> login <a class="signin-link"
+                                             href="/login?{{ request.META.QUERY_STRING }}">Sign
+                    in</a>
+            </div>
+            >
+        </form>
     </div>
 {% endblock %}

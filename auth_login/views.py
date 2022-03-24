@@ -16,7 +16,6 @@ from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from oauth2_provider.models import AccessToken, Application
 
-from auth_login.utils import send_email
 from authentication.models import Tokens
 
 logger = logging.getLogger('auth')
@@ -72,13 +71,6 @@ def get_client_ip(request):
     return ip
 
 
-def reset_hash(user: User):
-    hash_user = make_password(user.username)
-    user.set_password(hash_user[34:])
-    msg = settings.CURRENT_DOMAIN_NAME_MAIN + 'auth/reset' + user.userhash
-    send_email(msg, user.username)
-
-
 @ensure_csrf_cookie
 def signin(request):
     context1 = {}
@@ -105,23 +97,33 @@ def signin(request):
     return render(request, template_name='login.html', context=context1)
 
 
-@ensure_csrf_cookie
-def password_reset(request):
+@login_required
+def reset_password(request):
     context1 = {}
-    pprint(request.META['QUERY_STRING'])
     if request.method == "POST":
-        email = request.POST["email"]
+        password = request.POST.get("password")
+        passwrd2 = request.POST.get("password retype")
+        user = request.user
+        print(user)
+        if not password or not passwrd2:
+            context1['pswderr'] = 'Password cannot be empty'
+            logger.info('Password was empty')
+        else:
+            if passwrd2 == password:
+                try:
+                    logger.info("everything is okey creating user ")
+                    user.set_password(password)
+                    user.save()
+                    logger.info('password set')
+                except Exception as e:
+                    logger.error(e)
 
-        if not email:
-            context1['verification'] = "Email cannot be empty"
-        try:
-            user = User.objects.get(email=email)
-            reset_hash(user)
-            context1['verification'] = "A password reset link has been sent to your email. "
-        except User.DoesNotExist:
-            context1['verification'] = "The user with this mail does not exists"
+            else:
+                logger.info('Password Does not match')
+                context1['pswderr'] = 'Password Does not match'
 
-    return render(request, template_name='reset.html', context=context1)
+    context1['sign_text'] = "Reset"
+    return render(request, template_name="reset.html", context=context1)
 
 
 @ensure_csrf_cookie
