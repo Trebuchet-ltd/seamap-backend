@@ -1,0 +1,5 @@
+venv/
+.idea
+.env
+*/migrations/*
+logs/*
