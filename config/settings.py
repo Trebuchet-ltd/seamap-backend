@@ -37,7 +37,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*']
 
-application_name = 'drf_template'
+application_name = 'seamap'
 
 # Application definition
 
@@ -58,7 +58,6 @@ INSTALLED_APPS = [
     'drf_yasg',
     'django_filters',
     'admin_honeypot',
-    'request_viewer',
     'log_viewer',
     'auth_login',
     'authentication',
@@ -75,7 +74,6 @@ MIDDLEWARE = [
     'django.contrib.auth.middleware.AuthenticationMiddleware',
     'django.contrib.messages.middleware.MessageMiddleware',
     'django.middleware.clickjacking.XFrameOptionsMiddleware',
-    'request_viewer.middleware.RequestViewerMiddleware',
 ]
 
 ROOT_URLCONF = 'config.urls'
@@ -110,15 +108,10 @@ WSGI_APPLICATION = 'config.wsgi.application'
 
 DATABASES = {
     'default': {
-        'ENGINE': 'django.db.backends.postgresql_psycopg2',
-        'NAME': os.environ.get('DB_NAME'),
-        'USER': os.environ.get('DB_USER'),
-        'PASSWORD': os.environ.get('DB_PASSWORD'),
-        'HOST': 'localhost',
-        'PORT': os.environ.get('DB_PORT'),
+        'ENGINE': 'django.db.backends.sqlite3',
+        'NAME': 'seamap',
     }
 }
-
 # Password validation
 # https://docs.djangoproject.com/en/2.2/ref/settings/#auth-password-validators
 
