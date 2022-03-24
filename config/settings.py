@@ -11,7 +11,7 @@ SOCIAL_AUTH_GOOGLE_OAUTH2_KEY = os.environ.get('GOOGLE_KEY')
 SOCIAL_AUTH_GOOGLE_OAUTH2_SECRET = os.environ.get('GOOGLE_SECRET')
 DEFAULT_CLIENT = os.environ.get('DEFAULT_CLIENT')
 
-ADMIN_URL = os.environ.get('ADMIN_URL')
+ADMIN_URL = 'server'
 SOCIAL_AUTH_GOOGLE_OAUTH2_SCOPE = [
     'https://www.googleapis.com/auth/userinfo.email',
     'https://www.googleapis.com/auth/userinfo.profile',
