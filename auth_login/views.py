@@ -105,28 +105,23 @@ def signin(request):
     return render(request, template_name='login.html', context=context1)
 
 
-def reset_password(request):
-    resend_form = OTP_resendform()
-    resend_form.helper.form_action = "/auth/reset_pass/"
-    context = {
-        "form": resend_form,
-        "login": "Resend Password"
-    }
+@ensure_csrf_cookie
+def password_reset(request):
+    context1 = {}
+    pprint(request.META['QUERY_STRING'])
     if request.method == "POST":
-        form = OTP_resendform(request.POST)
-        email = form["Email_Address"].value().lower()
+        email = request.POST["email"]
+
+        if not email:
+            context1['verification'] = "Email cannot be empty"
         try:
-            user = User.objects.get(username=email)
-            user.reset_hash()
-            context = {'error_heading': 'A Verification link has been sent to your email account',
-                       'error_message': 'Please click on the link that has been'
-                                        ' sent to your email account to verify'
-                                        ' your email and Reset the password',
-                       }
+            user = User.objects.get(email=email)
+            reset_hash(user)
+            context1['verification'] = "A password reset link has been sent to your email. "
         except User.DoesNotExist:
-            context = {'error_heading': 'Seems like you are not registered yet',
-                       'error_message': 'Please SignUp to continue'}
-    return render(request, 'login.html', context=context)
+            context1['verification'] = "The user with this mail does not exists"
+
+    return render(request, template_name='reset.html', context=context1)
 
 
 @ensure_csrf_cookie
