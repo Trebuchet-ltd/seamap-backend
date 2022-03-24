@@ -7,7 +7,7 @@ from . import views
 from .views import ImageViewSet
 
 router = DefaultRouter()
-router.register(ImageViewSet, 'image')
+router.register('image',ImageViewSet)
 urlpatterns = [
     path(r'', include(router.urls)),
 ]
