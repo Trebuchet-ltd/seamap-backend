@@ -8,5 +8,5 @@ urlpatterns = [
     path('logout/', log_out),
     path('signup/', signup),
 
-
 ]
+

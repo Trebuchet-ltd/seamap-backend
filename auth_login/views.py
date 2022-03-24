@@ -8,6 +8,7 @@ import requests
 from django.conf import settings
 from django.contrib.auth import authenticate, login, logout
 from django.contrib.auth.decorators import login_required
+from django.contrib.auth.hashers import make_password
 from django.contrib.auth.models import User
 from django.db import IntegrityError
 from django.http import HttpResponseRedirect
@@ -15,6 +16,7 @@ from django.shortcuts import render
 from django.views.decorators.csrf import ensure_csrf_cookie
 from oauth2_provider.models import AccessToken, Application
 
+from auth_login.utils import send_email
 from authentication.models import Tokens
 
 logger = logging.getLogger('auth')
@@ -70,6 +72,13 @@ def get_client_ip(request):
     return ip
 
 
+def reset_hash(user: User):
+    hash_user = make_password(user.username)
+    user.set_password(hash_user[34:])
+    msg = settings.CURRENT_DOMAIN_NAME_MAIN + 'auth/reset' + user.userhash
+    send_email(msg, user.username)
+
+
 @ensure_csrf_cookie
 def signin(request):
     context1 = {}
@@ -94,6 +103,30 @@ def signin(request):
     context1['google_redirect_uri'] = settings.DEPLOYMENT_URL + '/google-login'
 
     return render(request, template_name='login.html', context=context1)
+
+
+def reset_password(request):
+    resend_form = OTP_resendform()
+    resend_form.helper.form_action = "/auth/reset_pass/"
+    context = {
+        "form": resend_form,
+        "login": "Resend Password"
+    }
+    if request.method == "POST":
+        form = OTP_resendform(request.POST)
+        email = form["Email_Address"].value().lower()
+        try:
+            user = User.objects.get(username=email)
+            user.reset_hash()
+            context = {'error_heading': 'A Verification link has been sent to your email account',
+                       'error_message': 'Please click on the link that has been'
+                                        ' sent to your email account to verify'
+                                        ' your email and Reset the password',
+                       }
+        except User.DoesNotExist:
+            context = {'error_heading': 'Seems like you are not registered yet',
+                       'error_message': 'Please SignUp to continue'}
+    return render(request, 'login.html', context=context)
 
 
 @ensure_csrf_cookie
@@ -148,4 +181,3 @@ def log_out(request):
     logout(request)
     url = '/?' + request.META['QUERY_STRING']
     return HttpResponseRedirect(url)
-
