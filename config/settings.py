@@ -1,6 +1,6 @@
 import os
 from pathlib import Path
-
+import xarray as xr
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env')
@@ -38,6 +38,8 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 application_name = 'seamap'
+
+data_raw = xr.open_dataset("data/woa_salt.nc", decode_times=False)
 
 # Application definition
 
@@ -230,7 +232,6 @@ EMAIL_USE_TLS = True
 EMAIL_PORT = 587
 EMAIL_HOST_USER = os.getenv('EMAIL_HOST_USER')
 EMAIL_HOST_PASSWORD = os.getenv('EMAIL_HOST_PASSWORD')
-
 
 SWAGGER_SETTINGS = {
     'JSON_EDITOR': True,
