@@ -9,10 +9,10 @@ from .models import Image
 from .serializers import ImageSerializer
 from .plotter import get_plot
 
-
 # Create your views here.
 
-data_raw = xr.open_dataset("netcdf/woa_salt.nc", decode_times=False)
+data_raw = None
+
 
 class ImageViewSet(viewsets.ModelViewSet):
     """
