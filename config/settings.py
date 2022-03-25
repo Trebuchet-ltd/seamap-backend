@@ -38,8 +38,10 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 application_name = 'seamap'
-
-data_raw = xr.open_dataset("data/woa_salt.nc", decode_times=False)
+try:
+    data_raw = xr.open_dataset("data/woa_salt.nc", decode_times=False)
+except Exception as e:
+    data_raw = None
 
 # Application definition
 
