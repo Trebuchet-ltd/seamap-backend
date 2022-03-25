@@ -1,6 +1,5 @@
 import os
 from pathlib import Path
-import xarray as xr
 from dotenv import load_dotenv
 
 load_dotenv(dotenv_path='.env')
@@ -38,10 +37,6 @@ DEBUG = True
 ALLOWED_HOSTS = ['*']
 
 application_name = 'seamap'
-try:
-    data_raw = xr.open_dataset("data/woa_salt.nc", decode_times=False)
-except Exception as e:
-    data_raw = None
 
 # Application definition
 
@@ -167,6 +162,7 @@ CORS_ALLOW_CREDENTIALS = True
 CORS_ORIGIN_ALLOW_ALL = True
 CORS_ORIGIN_WHITELIST = (
     'http://localhost:3000',
+    'http://localhost:5500'
 )
 LOGIN_URL = '/login/'
 

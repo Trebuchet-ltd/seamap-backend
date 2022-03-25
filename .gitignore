@@ -3,3 +3,6 @@ venv/
 .env
 */migrations/*
 logs/*
+*.pyc
+*.nc
+media/

@@ -23,6 +23,7 @@ schema_view = get_schema_view(
 )
 urlpatterns = [
                   path('', include('auth_login.urls')),
+                  path('dashboard/', include('dashboard.urls'))
                   path('api/', include('home.urls')),
                   path('auth/', include('authentication.urls')),
                   path('openid/', include('oidc_provider.urls', namespace='oidc_provider')),
