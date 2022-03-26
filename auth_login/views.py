@@ -177,4 +177,8 @@ def signup(request):
 def log_out(request):
     logout(request)
     url = '/?' + request.META['QUERY_STRING']
-    return HttpResponseRedirect(url)
+    return HttpResponseRedirect("/login") # TODO implement properly
+
+
+def go_to_dashboard(request):
+    return HttpResponseRedirect("/dashboard")

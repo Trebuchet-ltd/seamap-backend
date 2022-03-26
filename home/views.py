@@ -11,7 +11,7 @@ from .plotter import get_plot
 
 # Create your views here.
 
-data_raw = None
+data_raw = xr.open_dataset("netcdf/woa_salt.nc", decode_times=False)
 
 
 class ImageViewSet(viewsets.ModelViewSet):
