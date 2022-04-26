@@ -6,6 +6,7 @@ import pandas as pd
 
 SCALE = 2
 
+
 def _get_units_from_attrs(da):
     """Extracts and formats the unit/units from a attributes."""
     units = " [{}]"
@@ -71,7 +72,6 @@ def plot(darray):
 
 
 def get_plot(data_raw, type, lat, lon, time=None):
-
     lat = round(float(lat) / SCALE)
     lon = round(float(lon) / SCALE)
 
