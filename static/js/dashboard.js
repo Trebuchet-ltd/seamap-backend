@@ -106,15 +106,20 @@ function mouseEvent(event)
         mouse.button = true;
         showDetails(event);
     }
+
     if (event.type === "mouseup" || event.type === "mouseout") { mouse.button = false; }
+
     mouse.oldX = mouse.x;
     mouse.oldY = mouse.y;
     mouse.x = event.offsetX;
     mouse.y = event.offsetY;
+
     if (mouse.button)
     { // pan
         view.pan({ x: mouse.x - mouse.oldX, y: mouse.y - mouse.oldY });
     }
+
+    event.preventDefault();
 }
 
 function mouseWheelEvent(event)

@@ -34,14 +34,13 @@ def convert_to_rgb(val, minval, maxval):
 
 
 def create_images(dataset_path, data_variable):
-    dataset_name = dataset_path.split('/')[-1].split('.')[0]
 
-    pathlib.Path(f"data/{dataset_name}").mkdir(parents=True, exist_ok=True)
+    pathlib.Path(f"media/{data_variable}").mkdir(parents=True, exist_ok=True)
     data_raw = xr.open_dataset(dataset_path, decode_times=False)
 
     for j in range(12):
         for k in range(57):
-            numpy_array = data_raw.get("s_an").isel(depth=[k], time=[j]).values[0, 0]
+            numpy_array = data_raw.get(data_variable).isel(depth=[k], time=[j]).values[0, 0]
 
             min_val = np.nanmin(numpy_array)
             max_val = np.nanmax(numpy_array)
@@ -51,16 +50,17 @@ def create_images(dataset_path, data_variable):
             for lat in range(len(numpy_array)):
                 for lng in range(len(numpy_array[0])):
                     if not np.isnan(numpy_array[lat, lng]):
-                        image[lat, lng] = convert_to_rgb(min_val, max_val, numpy_array[lat, lng])
+                        image[lat, lng] = convert_to_rgb(minval=min_val, maxval=max_val, val=numpy_array[lat, lng])
 
             image = cv2.flip(image, 0)
             image = cv2.resize(image, size, interpolation=cv2.INTER_CUBIC)
 
-            cv2.imwrite(f"media/woa_salt/{j}-{k}.png", image)
+            cv2.imwrite(f"media/{data_variable}/{j}-{k}.png", image)
+            print(f"media/{data_variable}/{j}-{k}.png")
 
 
 def main():
-    create_images("netcdf/woa_salt.nc", "s_an")
+    create_images("netcdf/woa_temp.nc", "t_an")
 
 
 if __name__ == '__main__':

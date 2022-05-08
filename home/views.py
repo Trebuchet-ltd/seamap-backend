@@ -11,7 +11,7 @@ from .plotter import get_plot
 
 # Create your views here.
 
-# data_raw = xr.open_dataset("netcdf/woa_salt.nc", decode_times=False)
+data_raw = xr.open_dataset("netcdf/woa_salt.nc", decode_times=False)
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -37,8 +37,7 @@ class ImageViewSet(viewsets.ModelViewSet):
             return Response({"error": str(er)}, status=400)
 
         try:
-            # svg_str = get_plot(data_raw, type, lat, long, time)
-            svg_str = "No DATA FILE !!!"
+            svg_str = get_plot(data_raw, type, lat, long, time)
         except Exception as er:
             print(er)
             return Response({"error": str(er)}, status=400)
