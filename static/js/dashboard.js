@@ -163,7 +163,7 @@ depth.addEventListener("change", getMap);
 
 function getMap()
 {
-    const type = "woa_salt";
+    const type = "s_an";
     img.src = `/media/${type}/${Number(time.value) - 1}-${Number(depth.value) - 1}.png`;
 }
 

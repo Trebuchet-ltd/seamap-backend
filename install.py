@@ -34,7 +34,6 @@ def convert_to_rgb(val, minval, maxval):
 
 
 def create_images(dataset_path, data_variable):
-
     pathlib.Path(f"media/{data_variable}").mkdir(parents=True, exist_ok=True)
     data_raw = xr.open_dataset(dataset_path, decode_times=False)
 
@@ -59,9 +58,37 @@ def create_images(dataset_path, data_variable):
             print(f"media/{data_variable}/{j}-{k}.png")
 
 
+def save_as_np(dataset_path, data_variable):
+    pathlib.Path(f"data/{data_variable}").mkdir(parents=True, exist_ok=True)
+
+    data_raw = xr.open_dataset(dataset_path, decode_times=False)
+
+    for j in range(12):
+        arrays = []
+        for k in range(57):
+            numpy_array = data_raw.get(data_variable).isel(depth=[k], time=[j]).values[0, 0]
+            cv2.flip(numpy_array, 0, dst=numpy_array)
+
+            arrays.append(numpy_array)
+
+        np.save(f"data/{data_variable}/{j}.npy", np.array(arrays, dtype=np.float32))
+
+
 def main():
-    create_images("netcdf/woa_temp.nc", "t_an")
+    save_as_np("netcdf/woa_temp.nc", "t_an")
 
 
 if __name__ == '__main__':
     main()
+    # d = xr.open_dataset("netcdf/GEBCO_2021_sub_ice_topo.nc", decode_times=False)
+    # d = cv2.resize(d.get("elevation").values, size, interpolation=cv2.INTER_AREA)
+    #
+    # image = np.zeros((*d.shape, 4), dtype=np.uint8)
+    #
+    # image[d >= 0] = [74, 240, 212, 255]
+
+    # image = cv2.flip(d, 0)
+    #
+    # np.save("data/bath.npy", image)
+    #
+    # cv2.imwrite("media/map.png", image)
