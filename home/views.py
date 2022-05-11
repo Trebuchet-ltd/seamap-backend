@@ -1,5 +1,6 @@
+import numpy as np
 from rest_framework import viewsets, status
-from rest_framework.decorators import action
+from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
 from .models import Image
@@ -38,3 +39,21 @@ class ImageViewSet(viewsets.ModelViewSet):
             return Response({"error": str(er)}, status=400)
 
         return Response({"data": data}, status=status.HTTP_200_OK)
+
+
+@api_view(('GET',))
+def get_spot(request):
+    dep, lat, lon = [int(request.GET[a]) for a in ["dep", "lat", "lon"]]
+
+    response = {}
+
+    for map_type in ["s_an", "t_an"]:
+        response[map_type] = {}
+        for time in range(12):
+            d = np.load(f"data/{map_type}/{time}.npy", mmap_mode="r")
+            if not np.isnan(d[dep, lat, lon]):
+                response[map_type][time] = d[dep, lat, lon]
+
+    response["bath"] = np.load("data/bath.npy", mmap_mode="r")[lat, lon]
+
+    return Response(response, status=status.HTTP_200_OK)

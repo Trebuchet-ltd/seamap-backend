@@ -10,7 +10,7 @@ LON_RESOLUTION = 0.25
 TIME_RESOLUTION = 1
 DEPTH_RESOLUTION = 5
 
-SCALE = 2
+SCALE = 1
 
 size = (1440 * SCALE, 720 * SCALE)
 
@@ -74,8 +74,37 @@ def save_as_np(dataset_path, data_variable):
         np.save(f"data/{data_variable}/{j}.npy", np.array(arrays, dtype=np.float32))
 
 
+def generate_legend(dataset_path, data_variable):
+    pathlib.Path(f"media/{data_variable}/legend").mkdir(parents=True, exist_ok=True)
+
+    data_raw = xr.open_dataset(dataset_path, decode_times=False)
+    grad = cv2.imread("data/legend.png")
+
+    for k in range(len(data_raw.depth)):
+        numpy_array = data_raw.get(data_variable).isel(depth=[k]).values[0, 0]
+
+        min_val = np.nanmin(numpy_array)
+        max_val = np.nanmax(numpy_array)
+
+        steps = 20
+        image = np.copy(grad)
+
+        for d in range(steps):
+            val = round(min_val + ((max_val - min_val) / steps * d), 1)
+            image = cv2.putText(image, str(val), (round(5 + (d * grad.shape[1] / steps)), grad.shape[0] >> 1),
+                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1.5, (0, 0, 0), 2, cv2.LINE_AA)
+
+        cv2.imwrite(f"media/{data_variable}/legend/{k}.png", image)
+
+    cv2.waitKey()
+
+
 def main():
-    save_as_np("netcdf/woa_temp.nc", "t_an")
+    generate_legend("netcdf/woa_salt.nc", "s_an")
+    # data_raw = np.load(f"data/s_an/0.npy")[1]
+    #
+    # cv2.imshow("aa", data_raw)
+    # cv2.waitKey()
 
 
 if __name__ == '__main__':

@@ -14,6 +14,6 @@ def get_plot(map_type, lat, lon, time=-1):
     for i in range(len(data_raw)):
         if np.isnan(data_raw[i]):
             continue
-        data[f"{i*500}"] = data_raw[i]
+        data[f"{i*(1500/57)}"] = data_raw[i]
 
     return data
