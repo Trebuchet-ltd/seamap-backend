@@ -10,12 +10,14 @@ LON_RESOLUTION = 0.25
 TIME_RESOLUTION = 1
 DEPTH_RESOLUTION = 5
 
-SCALE = 1
+SCALE = 2
 
 size = (1440 * SCALE, 720 * SCALE)
 
-colors = [[148, 0, 211], [75, 0, 130], [0, 0, 255], [0, 255, 0],
-          [255, 255, 0], [255, 127, 0], [255, 0, 0]]
+# colors = [[148, 0, 211], [75, 0, 130], [0, 0, 255], [0, 255, 0],
+#           [255, 255, 0], [255, 127, 0], [255, 0, 0]]
+
+colors = [ [*reversed(c)] for c in [[164, 235, 245], [134, 217, 240], [92, 182, 247], [62, 171, 250], [5, 145, 247], [0, 0, 250]]]
 
 
 def convert_to_rgb(val, minval, maxval):
@@ -41,10 +43,12 @@ def create_images(dataset_path, data_variable):
         for k in range(57):
             numpy_array = data_raw.get(data_variable).isel(depth=[k], time=[j]).values[0, 0]
 
+            numpy_array[numpy_array >= 0] = np.nan
+
             min_val = np.nanmin(numpy_array)
             max_val = np.nanmax(numpy_array)
 
-            image = np.ones((*numpy_array.shape, 3), dtype=np.uint8) * 255
+            image = np.zeros((*numpy_array.shape, 3), dtype=np.uint8)
 
             for lat in range(len(numpy_array)):
                 for lng in range(len(numpy_array[0])):
@@ -53,6 +57,8 @@ def create_images(dataset_path, data_variable):
 
             image = cv2.flip(image, 0)
             image = cv2.resize(image, size, interpolation=cv2.INTER_CUBIC)
+
+            image[image == [0, 0, 0]] = [74, 240, 212]
 
             cv2.imwrite(f"media/{data_variable}/{j}-{k}.png", image)
             print(f"media/{data_variable}/{j}-{k}.png")
@@ -100,7 +106,20 @@ def generate_legend(dataset_path, data_variable):
 
 
 def main():
-    generate_legend("netcdf/woa_salt.nc", "s_an")
+    numpy_array = np.load("data/bath.npy", mmap_mode="r")
+
+    min_val = np.nanmin(numpy_array)
+    max_val = np.nanmax(numpy_array)
+
+    image = np.ones((*numpy_array.shape, 3), dtype=np.uint8) * 255
+
+    for lat in range(len(numpy_array)):
+        for lng in range(len(numpy_array[0])):
+            if not np.isnan(numpy_array[lat, lng]):
+                image[lat, lng] = convert_to_rgb(minval=min_val, maxval=max_val, val=numpy_array[lat, lng])
+
+    cv2.imwrite("media/bath/0-0.png", image)
+    # generate_legend("netcdf/woa_salt.nc", "s_an")
     # data_raw = np.load(f"data/s_an/0.npy")[1]
     #
     # cv2.imshow("aa", data_raw)

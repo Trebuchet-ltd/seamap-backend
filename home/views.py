@@ -43,7 +43,7 @@ class ImageViewSet(viewsets.ModelViewSet):
 
 @api_view(('GET',))
 def get_spot(request):
-    dep, lat, lon = [int(request.GET[a]) for a in ["dep", "lat", "lon"]]
+    dep, lat, lon = [int(round(float(request.GET[a]))) for a in ["dep", "lat", "lon"]]
 
     response = {}
 
