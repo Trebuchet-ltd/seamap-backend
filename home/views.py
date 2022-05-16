@@ -7,6 +7,7 @@ from .models import Image
 from .serializers import ImageSerializer
 from .plotter import get_plot
 
+
 # Create your views here.
 
 
@@ -17,6 +18,7 @@ class ImageViewSet(viewsets.ModelViewSet):
     http_method_names = ['get']
     queryset = Image.objects.all()
     serializer_class = ImageSerializer
+
     # permission_classes = [permissions.IsAuthenticated]
 
     @action(detail=False, methods=["get", ], url_path='plot')
@@ -55,5 +57,21 @@ def get_spot(request):
                 response[map_type][time] = d[dep, lat, lon]
 
     response["bath"] = np.load("data/bath.npy", mmap_mode="r")[lat, lon]
+
+    return Response(response, status=status.HTTP_200_OK)
+
+
+@api_view(('GET',))
+def get_depths(request):
+    response = {
+        "depths": [
+            0, 5, 10, 15, 20, 25, 30, 35, 40, 45,
+            50, 55, 60, 65, 70, 75, 80, 85, 90, 95,
+            100, 125, 150, 175, 200, 225, 250, 275, 300, 325,
+            350, 375, 400, 425, 450, 475, 500, 550, 600, 650,
+            700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150,
+            1200, 1250, 1300, 1350, 1400, 1450, 1500
+        ]
+    }
 
     return Response(response, status=status.HTTP_200_OK)
