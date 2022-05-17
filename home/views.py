@@ -3,6 +3,7 @@ from rest_framework import viewsets, status
 from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
+from constants import SCALES
 from .models import Image
 from .serializers import ImageSerializer
 from .plotter import get_plot
@@ -24,8 +25,8 @@ class ImageViewSet(viewsets.ModelViewSet):
     @action(detail=False, methods=["get", ], url_path='plot')
     def plot(self, request, *args, **kwargs):
 
-        print(request.GET)
         try:
+            graph_type = request.GET['graph_type']
             map_type = request.GET['type']
             time = request.GET['time']
             lat = request.GET['lat']
@@ -35,7 +36,7 @@ class ImageViewSet(viewsets.ModelViewSet):
             return Response({"error": str(er)}, status=400)
 
         try:
-            data = get_plot(map_type, lat, long, time)
+            data = get_plot(map_type, graph_type, lat, long, time)
         except Exception as er:
             print(er)
             return Response({"error": str(er)}, status=400)
@@ -46,6 +47,9 @@ class ImageViewSet(viewsets.ModelViewSet):
 @api_view(('GET',))
 def get_spot(request):
     dep, lat, lon = [int(round(float(request.GET[a]))) for a in ["dep", "lat", "lon"]]
+    m_type = request.GET["type"]
+
+    lat, lon = round(lat / SCALES[m_type]), round(lon / SCALES[m_type])
 
     response = {}
 
@@ -56,7 +60,10 @@ def get_spot(request):
             if not np.isnan(d[dep, lat, lon]):
                 response[map_type][time] = d[dep, lat, lon]
 
-    response["bath"] = np.load("data/bath.npy", mmap_mode="r")[lat, lon]
+    response["bath"] = [-np.load("data/bath.npy", mmap_mode="r")[lat*SCALES["bath"], lon*SCALES["bath"]]]
+
+    response["lat"] = lat
+    response["lon"] = lon
 
     return Response(response, status=status.HTTP_200_OK)
 

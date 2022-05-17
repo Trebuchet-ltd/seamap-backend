@@ -17,8 +17,8 @@ size = (1440 * SCALE, 720 * SCALE)
 # colors = [[148, 0, 211], [75, 0, 130], [0, 0, 255], [0, 255, 0],
 #           [255, 255, 0], [255, 127, 0], [255, 0, 0]]
 
-colors = [[*reversed(c)] for c in
-          [[164, 235, 245], [134, 217, 240], [92, 182, 247], [62, 171, 250], [5, 145, 247], [0, 0, 250]]]
+colors = [*reversed([[*reversed(c)] for c in
+          [[134, 217, 240], [92, 182, 247], [62, 171, 250], [5, 145, 247], [0, 0, 250]]])]
 
 
 def convert_to_rgb(val, minval, maxval):
@@ -107,7 +107,9 @@ def generate_legend(dataset_path, data_variable):
 
 
 def main():
-    numpy_array = np.load("data/bath.npy", mmap_mode="r")
+    numpy_array = np.load("data/bath.npy")
+
+    numpy_array[numpy_array >=0] = 0
 
     min_val = np.nanmin(numpy_array)
     max_val = np.nanmax(numpy_array)
@@ -116,7 +118,9 @@ def main():
 
     for lat in range(len(numpy_array)):
         for lng in range(len(numpy_array[0])):
-            if not np.isnan(numpy_array[lat, lng]):
+            if numpy_array[lat, lng] == 0:
+                image[lat, lng] = [74, 240, 212]
+            else:
                 image[lat, lng] = convert_to_rgb(minval=min_val, maxval=max_val, val=numpy_array[lat, lng])
 
     cv2.imwrite("media/bath/0-0.png", image)
@@ -135,7 +139,7 @@ if __name__ == '__main__':
     # image = np.zeros((*d.shape, 4), dtype=np.uint8)
     #
     # image[d >= 0] = [74, 240, 212, 255]
-
+    #
     # image = cv2.flip(d, 0)
     #
     # np.save("data/bath.npy", image)

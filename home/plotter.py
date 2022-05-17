@@ -1,6 +1,6 @@
 import numpy as np
 
-from install import SCALE
+from constants import SCALES
 
 depths = [
     0, 5, 10, 15, 20, 25, 30, 35, 40, 45,
@@ -12,12 +12,12 @@ depths = [
 ]
 
 
-def get_plot(map_type, lat, lon, time=-1):
+def get_plot(map_type, graph_type, lat, lon, time=-1):
     time = int(round(float(time)))
-    lat = int(round(float(lat) / SCALE))
-    lon = int(round(float(lon) / SCALE))
+    lat = int(round(float(lat) / SCALES[map_type]))
+    lon = int(round(float(lon) / SCALES[map_type]))
 
-    data_raw = np.load(f"data/{map_type}/{time}.npy")[:, lat, lon]
+    data_raw = np.load(f"data/{graph_type}/{time}.npy")[:, lat, lon]
     data = []
 
     for i in range(len(data_raw)):
