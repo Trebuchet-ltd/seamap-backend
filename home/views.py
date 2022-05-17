@@ -46,7 +46,7 @@ class ImageViewSet(viewsets.ModelViewSet):
 
 @api_view(('GET',))
 def get_spot(request):
-    dep, lat, lon = [int(round(float(request.GET[a]))) for a in ["dep", "lat", "lon"]]
+    layer, lat, lon = [int(round(float(request.GET[a]))) for a in ["layer", "lat", "lon"]]
     m_type = request.GET["type"]
 
     lat, lon = round(lat / SCALES[m_type]), round(lon / SCALES[m_type])
@@ -54,13 +54,13 @@ def get_spot(request):
     response = {}
 
     for map_type in ["s_an", "t_an"]:
-        response[map_type] = {}
+        response[map_type] = []
         for time in range(12):
             d = np.load(f"data/{map_type}/{time}.npy", mmap_mode="r")
-            if not np.isnan(d[dep, lat, lon]):
-                response[map_type][time] = d[dep, lat, lon]
+            if not np.isnan(d[layer, lat, lon]):
+                response[map_type].append(round(d[layer, lat, lon], 1))
 
-    response["bath"] = [-np.load("data/bath.npy", mmap_mode="r")[lat*SCALES["bath"], lon*SCALES["bath"]]]
+    response["bath"] = [round(-np.load("data/bath.npy", mmap_mode="r")[lat*SCALES["bath"], lon*SCALES["bath"]], 1)]*12
 
     response["lat"] = lat
     response["lon"] = lon
