@@ -72,7 +72,7 @@ def get_spot(request):
     response["bath"] = [round(-np.load("data/bath.npy", mmap_mode="r")[lat * SCALES["bath"], lon * SCALES["bath"]],
                               1)] * 12
 
-    response["lat"] = lat * LAT_RESOLUTION - 90
+    response["lat"] = 90 - lat * LAT_RESOLUTION
     response["lon"] = lon * LON_RESOLUTION - 180
 
     return Response(response, status=status.HTTP_200_OK)
