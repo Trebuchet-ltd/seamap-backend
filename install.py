@@ -5,8 +5,7 @@ import numpy as np
 import xarray as xr
 import cv2
 
-LAT_RESOLUTION = 0.25
-LON_RESOLUTION = 0.25
+
 TIME_RESOLUTION = 1
 DEPTH_RESOLUTION = 5
 
@@ -14,11 +13,11 @@ SCALE = 2
 
 size = (1440 * SCALE, 720 * SCALE)
 
-# colors = [[148, 0, 211], [75, 0, 130], [0, 0, 255], [0, 255, 0],
-#           [255, 255, 0], [255, 127, 0], [255, 0, 0]]
+colors = [*reversed([[148, 0, 211], [75, 0, 130], [0, 0, 255], [0, 255, 0],
+          [255, 255, 0], [255, 127, 0], [255, 0, 0]])]
 
-colors = [*reversed([[*reversed(c)] for c in
-          [[134, 217, 240], [92, 182, 247], [62, 171, 250], [5, 145, 247], [0, 0, 250]]])]
+# colors = [*reversed([[*reversed(c)] for c in
+#           [[134, 217, 240], [92, 182, 247], [62, 171, 250], [5, 145, 247], [0, 0, 250]]])]
 
 
 def convert_to_rgb(val, minval, maxval):
@@ -44,12 +43,10 @@ def create_images(dataset_path, data_variable):
         for k in range(57):
             numpy_array = data_raw.get(data_variable).isel(depth=[k], time=[j]).values[0, 0]
 
-            numpy_array[numpy_array >= 0] = np.nan
-
             min_val = np.nanmin(numpy_array)
             max_val = np.nanmax(numpy_array)
 
-            image = np.zeros((*numpy_array.shape, 3), dtype=np.uint8)
+            image = np.ones((*numpy_array.shape, 3), dtype=np.uint8) * 255
 
             for lat in range(len(numpy_array)):
                 for lng in range(len(numpy_array[0])):
@@ -58,8 +55,6 @@ def create_images(dataset_path, data_variable):
 
             image = cv2.flip(image, 0)
             image = cv2.resize(image, size, interpolation=cv2.INTER_CUBIC)
-
-            image[image == [0, 0, 0]] = [74, 240, 212]
 
             cv2.imwrite(f"media/{data_variable}/{j}-{k}.png", image)
             print(f"media/{data_variable}/{j}-{k}.png")
@@ -85,7 +80,7 @@ def generate_legend(dataset_path, data_variable):
     pathlib.Path(f"media/{data_variable}/legend").mkdir(parents=True, exist_ok=True)
 
     data_raw = xr.open_dataset(dataset_path, decode_times=False)
-    grad = cv2.imread("data/legend.png")
+    grad = cv2.flip(cv2.resize(cv2.imread("data/legend.png"), (1000, 20)), 1)
 
     for k in range(len(data_raw.depth)):
         numpy_array = data_raw.get(data_variable).isel(depth=[k]).values[0, 0]
@@ -93,13 +88,15 @@ def generate_legend(dataset_path, data_variable):
         min_val = np.nanmin(numpy_array)
         max_val = np.nanmax(numpy_array)
 
-        steps = 20
+        steps = 6
         image = np.copy(grad)
 
-        for d in range(steps):
+        for d in range(steps+1):
             val = round(min_val + ((max_val - min_val) / steps * d), 1)
-            image = cv2.putText(image, str(val), (round(5 + (d * grad.shape[1] / steps)), grad.shape[0] >> 1),
-                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 1.5, (0, 0, 0), 2, cv2.LINE_AA)
+            x = round(10 + (d * grad.shape[1] / steps))
+
+            image = cv2.putText(image, str(val), (x, (grad.shape[0] >> 1)+5),
+                                cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.75, (255, 255, 255), 1, cv2.LINE_AA)
 
         cv2.imwrite(f"media/{data_variable}/legend/{k}.png", image)
 
@@ -107,28 +104,25 @@ def generate_legend(dataset_path, data_variable):
 
 
 def main():
-    numpy_array = np.load("data/bath.npy")
-
-    numpy_array[numpy_array >=0] = 0
-
-    min_val = np.nanmin(numpy_array)
-    max_val = np.nanmax(numpy_array)
-
-    image = np.ones((*numpy_array.shape, 3), dtype=np.uint8) * 255
-
-    for lat in range(len(numpy_array)):
-        for lng in range(len(numpy_array[0])):
-            if numpy_array[lat, lng] == 0:
-                image[lat, lng] = [74, 240, 212]
-            else:
-                image[lat, lng] = convert_to_rgb(minval=min_val, maxval=max_val, val=numpy_array[lat, lng])
-
-    cv2.imwrite("media/bath/0-0.png", image)
-    # generate_legend("netcdf/woa_salt.nc", "s_an")
-    # data_raw = np.load(f"data/s_an/0.npy")[1]
+    # numpy_array = np.load("data/bath.npy")
     #
-    # cv2.imshow("aa", data_raw)
-    # cv2.waitKey()
+    # numpy_array[numpy_array >=0] = 0
+    #
+    # min_val = np.nanmin(numpy_array)
+    # max_val = np.nanmax(numpy_array)
+    #
+    # image = np.ones((*numpy_array.shape, 3), dtype=np.uint8) * 255
+    #
+    # for lat in range(len(numpy_array)):
+    #     for lng in range(len(numpy_array[0])):
+    #         if numpy_array[lat, lng] == 0:
+    #             image[lat, lng] = [74, 240, 212]
+    #         else:
+    #             image[lat, lng] = convert_to_rgb(minval=min_val, maxval=max_val, val=numpy_array[lat, lng])
+    #
+    # cv2.imwrite("media/bath/0-0.png", image)
+    generate_legend("netcdf/woa_temp.nc", "t_an")
+    # create_images("netcdf/woa_temp.nc", "t_an")
 
 
 if __name__ == '__main__':
