@@ -5,7 +5,6 @@ import numpy as np
 import xarray as xr
 import cv2
 
-
 TIME_RESOLUTION = 1
 DEPTH_RESOLUTION = 5
 
@@ -13,11 +12,10 @@ SCALE = 2
 
 size = (1440 * SCALE, 720 * SCALE)
 
-colors = [*reversed([[148, 0, 211], [75, 0, 130], [0, 0, 255], [0, 255, 0],
-          [255, 255, 0], [255, 127, 0], [255, 0, 0]])]
+# colors = [[2, 0, 0], [28, 5, 0], [100, 57, 0], [196, 158, 16], [175, 229, 145], [220, 251, 219]] sea
 
-# colors = [*reversed([[*reversed(c)] for c in
-#           [[134, 217, 240], [92, 182, 247], [62, 171, 250], [5, 145, 247], [0, 0, 250]]])]
+colors = [*reversed([[*reversed(c)] for c in
+          [[134, 217, 240], [92, 182, 247], [62, 171, 250], [5, 145, 247], [0, 0, 250]]])]
 
 
 def convert_to_rgb(val, minval, maxval):
@@ -91,11 +89,11 @@ def generate_legend(dataset_path, data_variable):
         steps = 6
         image = np.copy(grad)
 
-        for d in range(steps+1):
+        for d in range(steps + 1):
             val = round(min_val + ((max_val - min_val) / steps * d), 1)
             x = round(10 + (d * grad.shape[1] / steps))
 
-            image = cv2.putText(image, str(val), (x, (grad.shape[0] >> 1)+5),
+            image = cv2.putText(image, str(val), (x, (grad.shape[0] >> 1) + 5),
                                 cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.75, (255, 255, 255), 1, cv2.LINE_AA)
 
         cv2.imwrite(f"media/{data_variable}/legend/{k}.png", image)
@@ -103,39 +101,63 @@ def generate_legend(dataset_path, data_variable):
     cv2.waitKey()
 
 
+def generate_bath_legend():
+    numpy_array = np.load("data/bath.npy")
+
+    numpy_array[numpy_array >= 0] = 0
+
+    numpy_array *= -1
+
+    min_val = np.nanmin(numpy_array)
+    max_val = np.nanmax(numpy_array)
+
+    steps = 6
+
+    grad = cv2.resize(cv2.imread("data/bath_legend.png"), (1000, 20))
+
+    for d in range(steps + 1):
+        val = round(min_val + ((max_val - min_val) / steps * d), 1)
+        x = round(10 + (d * grad.shape[1] / steps))
+
+        grad = cv2.putText(grad, str(val), (x, (grad.shape[0] >> 1) + 5),
+                            cv2.FONT_HERSHEY_COMPLEX_SMALL, 0.75, (255, 255, 255), 1, cv2.LINE_AA)
+
+    cv2.imwrite(f"media/bath/legend/{0}.png", grad)
+
+
 def main():
-    # numpy_array = np.load("data/bath.npy")
-    #
-    # numpy_array[numpy_array >=0] = 0
-    #
-    # min_val = np.nanmin(numpy_array)
-    # max_val = np.nanmax(numpy_array)
-    #
-    # image = np.ones((*numpy_array.shape, 3), dtype=np.uint8) * 255
-    #
-    # for lat in range(len(numpy_array)):
-    #     for lng in range(len(numpy_array[0])):
-    #         if numpy_array[lat, lng] == 0:
-    #             image[lat, lng] = [74, 240, 212]
-    #         else:
-    #             image[lat, lng] = convert_to_rgb(minval=min_val, maxval=max_val, val=numpy_array[lat, lng])
-    #
-    # cv2.imwrite("media/bath/0-0.png", image)
-    generate_legend("netcdf/woa_temp.nc", "t_an")
+    numpy_array = np.load("data/bath.npy")
+
+    numpy_array[numpy_array >=0] = 0
+
+    min_val = np.nanmin(numpy_array)
+    max_val = np.nanmax(numpy_array)
+
+    image = np.ones((*numpy_array.shape, 3), dtype=np.uint8) * 255
+
+    for lat in range(len(numpy_array)):
+        for lng in range(len(numpy_array[0])):
+            if numpy_array[lat, lng] == 0:
+                image[lat, lng] = [74, 240, 212]
+            else:
+                image[lat, lng] = convert_to_rgb(minval=min_val, maxval=max_val, val=numpy_array[lat, lng])
+
+    cv2.imwrite("media/bath/0-0.png", image)
+    # generate_legend("netcdf/woa_temp.nc", "t_an")
     # create_images("netcdf/woa_temp.nc", "t_an")
 
 
 if __name__ == '__main__':
-    main()
-    # d = xr.open_dataset("netcdf/GEBCO_2021_sub_ice_topo.nc", decode_times=False)
-    # d = cv2.resize(d.get("elevation").values, size, interpolation=cv2.INTER_AREA)
+    generate_bath_legend()
+    # main()
+    # d = np.load("data/bath.npy")
     #
     # image = np.zeros((*d.shape, 4), dtype=np.uint8)
     #
-    # image[d >= 0] = [74, 240, 212, 255]
+    # image[d >= 0] = [*reversed([179, 245, 66]), 255]
     #
-    # image = cv2.flip(d, 0)
+    # # image = cv2.flip(d, 0)
     #
-    # np.save("data/bath.npy", image)
+    # # np.save("data/bath.npy", image)
     #
     # cv2.imwrite("media/map.png", image)
