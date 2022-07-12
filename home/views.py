@@ -4,19 +4,11 @@ from rest_framework.decorators import action, api_view
 from rest_framework.response import Response
 
 from constants import SCALES, LAT_RESOLUTION, LON_RESOLUTION
+from install import depths
 from .models import Image
 from .serializers import ImageSerializer
 
 # Create your views here.
-
-depths = [
-    0, 5, 10, 15, 20, 25, 30, 35, 40, 45,
-    50, 55, 60, 65, 70, 75, 80, 85, 90, 95,
-    100, 125, 150, 175, 200, 225, 250, 275, 300, 325,
-    350, 375, 400, 425, 450, 475, 500, 550, 600, 650,
-    700, 750, 800, 850, 900, 950, 1000, 1050, 1100, 1150,
-    1200, 1250, 1300, 1350, 1400, 1450, 1500
-]
 
 
 class ImageViewSet(viewsets.ModelViewSet):
@@ -39,13 +31,13 @@ class ImageViewSet(viewsets.ModelViewSet):
         except KeyError as er:
             return Response({"error": str(er)}, status=400)
 
-        data_raw = np.load(f"data/{graph_type}/{time}.npy", mmap_mode="r")[:, lat, lon]
+        data_raw = np.load(f"data/{graph_type}/{time}.npy")[:, lat, lon]
         data = []
 
         print(f"{0} {lat=} {lon=} {data_raw[0]=}")
 
         for i in range(len(data_raw)):
-            if np.isnan(data_raw[i]):
+            if np.isnan(data_raw[i]) or data_raw[i] == -2147483648:
                 continue
             data.append({"y": depths[i], "x": data_raw[i]})
 
@@ -61,19 +53,18 @@ def get_spot(request):
 
     response = {}
 
-    for map_type in ["s_an", "t_an"]:
+    for map_type in ["s_an", "t_an", "s_nd", "c_an"]:
         response[map_type] = []
         for time in range(12):
             d = np.load(f"data/{map_type}/{time}.npy", mmap_mode="r")
-            print(f"{time} {lat=} {lon=} {d[time, lat, lon]=}")
-            if not np.isnan(d[layer, lat, lon]):
+            if not np.isnan(d[layer, lat, lon]) and d[layer, lat, lon] != -2147483648:
                 response[map_type].append(d[layer, lat, lon])
 
     response["bath"] = [round(-np.load("data/bath.npy", mmap_mode="r")[lat * SCALES["bath"], lon * SCALES["bath"]],
                               1)] * 12
 
-    response["lat"] = 90 - lat * LAT_RESOLUTION
-    response["lon"] = lon * LON_RESOLUTION - 180
+    response["lat"] = lat * LAT_RESOLUTION
+    response["lon"] = lon * LON_RESOLUTION
 
     return Response(response, status=status.HTTP_200_OK)
 
